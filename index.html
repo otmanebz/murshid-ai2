@@ -1378,78 +1378,30 @@ document.querySelectorAll('.check-item').forEach(item => {
 function buildPrompt(data) {
   const langMap = { ar: 'Arabic', fr: 'French', en: 'English', es: 'Spanish' };
   const langName = langMap[data.lang] || 'Arabic';
-  const interests = data.interests.join(', ');
+  const interests = data.interests.length > 0 ? data.interests.join(', ') : 'general tourism';
   const days = data.dateFrom && data.dateTo
-    ? Math.ceil((new Date(data.dateTo) - new Date(data.dateFrom)) / 86400000)
+    ? Math.max(1, Math.ceil((new Date(data.dateTo) - new Date(data.dateFrom)) / 86400000))
     : 3;
 
-  return `You are Murshid AI, an expert Moroccan tourism guide. You MUST respond ONLY in valid JSON format (no markdown, no backticks, just raw JSON).
+  const systemMsg = `You are Murshid AI, an expert Moroccan tourism guide. You MUST output ONLY a valid JSON object. No markdown. No backticks. No explanations. No text before or after the JSON. Start your response with { and end with }.`;
 
-TOURIST PROFILE:
-- City: ${data.city}
-- From: ${data.country}
-- Budget: ${data.budget} ${data.currency}
-- Travelers: ${data.people}
-- Dates: ${data.dateFrom || 'flexible'} to ${data.dateTo || 'flexible'} (${days} days)
+  const userMsg = `Create a detailed travel plan. All text values must be written in ${langName}.
+
+Tourist profile:
+- City to visit: ${data.city}
+- Traveler from: ${data.country}
+- Total budget: ${data.budget} ${data.currency}
+- Number of travelers: ${data.people}
+- Trip: ${data.dateFrom || 'flexible'} to ${data.dateTo || 'flexible'} (${days} days)
 - Interests: ${interests}
-- Language: ${langName}
 
-Return this EXACT JSON structure (all text in ${langName}):
-{
-  "greeting": "A warm, personal 2-3 sentence welcome message addressing their specific profile",
-  "city_story": "A beautiful 2-3 sentence poetic description of the city",
-  "suggested_places": [
-    {
-      "id": 1,
-      "name": "Place name in local language",
-      "name_en": "Place name in English",
-      "type": "hotel|nature|heritage|restaurant|activity|spa|market",
-      "emoji": "🏨",
-      "category_label": "فندق|طبيعة|تراث|مطعم|نشاط|سبا|سوق",
-      "description": "2-sentence description why this place matches the tourist",
-      "secret_tip": "One authentic local secret tip",
-      "price_mad": "Price range in MAD e.g. 150-300 درهم",
-      "hours": "Opening hours",
-      "phone": "Phone number if known, else empty string"
-    }
-  ],
-  "itinerary": [
-    {
-      "day": 1,
-      "day_title": "Day title (e.g. اليوم الأول)",
-      "theme": "Theme for the day (e.g. الأسواق والتاريخ)",
-      "narrative": "2-sentence story about what this day feels like",
-      "stops": [
-        {
-          "place_id": 1,
-          "name": "Place name",
-          "emoji": "🕌",
-          "type_label": "Type label",
-          "time": "09:00 ص",
-          "duration": "2 ساعات",
-          "price_mad": "مجاني|150 درهم",
-          "description": "Why visit, what to do there, what to expect",
-          "tip": "Local secret tip"
-        }
-      ]
-    }
-  ],
-  "budget_breakdown": {
-    "accommodation": {"amount": 0, "label": "الإقامة", "emoji": "🏨"},
-    "food": {"amount": 0, "label": "الطعام", "emoji": "🍽️"},
-    "activities": {"amount": 0, "label": "الأنشطة", "emoji": "🎭"},
-    "transport": {"amount": 0, "label": "التنقل", "emoji": "🚗"}
-  },
-  "cultural_tips": [
-    {"icon": "👗", "label": "اللباس", "text": "Dress code tip"},
-    {"icon": "🤝", "label": "الآداب", "text": "Etiquette tip"},
-    {"icon": "💬", "label": "عبارات مفيدة", "text": "Useful local phrases"},
-    {"icon": "💡", "label": "نصيحة عملية", "text": "Practical tip"}
-  ],
-  "closing": "A warm encouraging 2-sentence closing message"
-}
+Output this exact JSON (replace all placeholder strings with real content in ${langName}):
 
-Generate ${days} days in the itinerary. Generate 4-6 suggested places. Make all amounts in MAD. Budget total is ${data.budget} ${data.currency}.`;
+{"greeting":"[2-3 warm sentences welcoming this specific traveler by nationality to ${data.city}, mentioning their interests]","city_story":"[2-3 poetic sentences about the soul and magic of ${data.city}]","suggested_places":[{"id":1,"name":"[real place name]","name_en":"[english name]","type":"hotel","emoji":"🏨","category_label":"[label in ${langName}]","description":"[why perfect for this tourist, 2 sentences]","secret_tip":"[real insider tip]","price_mad":"[price range in MAD]","hours":"[opening hours]","phone":"[phone or empty]"},{"id":2,"name":"[real place name]","name_en":"[english name]","type":"heritage","emoji":"🏛️","category_label":"[label in ${langName}]","description":"[2 sentences]","secret_tip":"[insider tip]","price_mad":"[price]","hours":"[hours]","phone":""},{"id":3,"name":"[real place name]","name_en":"[english name]","type":"restaurant","emoji":"🍽️","category_label":"[label in ${langName}]","description":"[2 sentences]","secret_tip":"[insider tip]","price_mad":"[price]","hours":"[hours]","phone":""},{"id":4,"name":"[real place name]","name_en":"[english name]","type":"nature","emoji":"🌿","category_label":"[label in ${langName}]","description":"[2 sentences]","secret_tip":"[insider tip]","price_mad":"[price]","hours":"[hours]","phone":""},{"id":5,"name":"[real place name]","name_en":"[english name]","type":"market","emoji":"🛍️","category_label":"[label in ${langName}]","description":"[2 sentences]","secret_tip":"[insider tip]","price_mad":"[price]","hours":"[hours]","phone":""}],"itinerary":[{"day":1,"day_title":"[Day 1 title in ${langName}]","theme":"[theme]","narrative":"[2 vivid sentences about the day]","stops":[{"place_id":1,"name":"[place name]","emoji":"🕌","type_label":"[type in ${langName}]","time":"09:00","duration":"2h","price_mad":"[price or مجاني]","description":"[what to do and see, 2 sentences]","tip":"[local tip]"},{"place_id":2,"name":"[place name]","emoji":"🏛️","type_label":"[type]","time":"11:30","duration":"1h30","price_mad":"[price]","description":"[description]","tip":"[tip]"},{"place_id":3,"name":"[place name]","emoji":"🍽️","type_label":"[type]","time":"13:00","duration":"1h","price_mad":"[price]","description":"[description]","tip":"[tip]"}]}],"budget_breakdown":{"accommodation":{"amount":${int(float(data.budget) * 0.4) if data.currency == 'MAD' else 0},"label":"[accommodation label in ${langName}]","emoji":"🏨"},"food":{"amount":${int(float(data.budget) * 0.25) if data.currency == 'MAD' else 0},"label":"[food label in ${langName}]","emoji":"🍽️"},"activities":{"amount":${int(float(data.budget) * 0.2) if data.currency == 'MAD' else 0},"label":"[activities label in ${langName}]","emoji":"🎭"},"transport":{"amount":${int(float(data.budget) * 0.15) if data.currency == 'MAD' else 0},"label":"[transport label in ${langName}]","emoji":"🚗"}},"cultural_tips":[{"icon":"👗","label":"[label in ${langName}]","text":"[dress code tip for ${data.city}]"},{"icon":"🤝","label":"[label]","text":"[local etiquette tip]"},{"icon":"💬","label":"[label]","text":"[3-4 useful local phrases with translation]"},{"icon":"💡","label":"[label]","text":"[practical money/safety tip]"}],"closing":"[2 warm encouraging sentences to close]"}
+
+IMPORTANT: Generate ${days} days in the itinerary array (add more day objects). Generate exactly 5 suggested_places. All monetary amounts in MAD numbers only.`;
+
+  return { systemMsg, userMsg };
 }
 
 // ====== GENERATE PLAN ======
@@ -1507,30 +1459,37 @@ async function generatePlan() {
 
   initTripMap(city);
 
-  const prompt = buildPrompt(tripData);
-  conversationHistory.push({ role: 'user', content: prompt });
+  const { systemMsg, userMsg } = buildPrompt(tripData);
+  // Store for chat context (use plain text summary, not JSON prompt)
+  conversationHistory = [
+    { role: 'system', content: `You are Murshid AI, an expert Moroccan tourism guide. Answer in ${tripData.lang === 'ar' ? 'Arabic' : tripData.lang === 'fr' ? 'French' : tripData.lang === 'es' ? 'Spanish' : 'English'}. Be friendly and helpful. The tourist is visiting ${tripData.city}.` },
+    { role: 'user', content: `I am planning a trip to ${tripData.city} with budget ${tripData.budget} ${tripData.currency} for ${tripData.people} travelers interested in ${tripData.interests.join(', ')}.` }
+  ];
 
   try {
-    const response = await callGroq(conversationHistory);
+    // Use dedicated JSON-mode call for plan generation
+    const response = await callGroqJSON(systemMsg, userMsg);
     const text = extractText(response);
-    conversationHistory.push({ role: 'assistant', content: text });
 
-    // Parse JSON
+    // Parse JSON with robust parser
     const planData = parseJSON(text);
     parsedPlanData = planData;
+
+    // Store assistant summary for chat
+    conversationHistory.push({ role: 'assistant', content: planData.greeting || 'Plan generated successfully.' });
 
     // Render
     document.getElementById('plan-loading').style.display = 'none';
     renderPlan(planData);
     renderSuggestedPlaces(planData.suggested_places || []);
 
-    // Add chat bubble
+    // Add greeting bubble in chat
     if (planData.greeting) {
       addChatMessage('ai', planData.greeting);
     }
 
   } catch (err) {
-    console.error(err);
+    console.error('Plan generation error:', err);
     document.getElementById('plan-loading').style.display = 'none';
     document.getElementById('plan-content').innerHTML = `
       <div class="greeting-card" style="text-align:center;padding:40px;">
@@ -1543,29 +1502,48 @@ async function generatePlan() {
   }
 }
 
-// ====== PARSE JSON ======
+// ====== PARSE JSON (robust) ======
 function parseJSON(text) {
-  try {
-    // Remove any markdown code blocks
-    const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    return JSON.parse(clean);
-  } catch(e) {
-    // Try to extract JSON from text
-    const match = text.match(/\{[\s\S]*\}/);
-    if (match) {
-      try { return JSON.parse(match[0]); } catch(e2) {}
-    }
-    // Return fallback
-    return {
-      greeting: text.substring(0, 300),
-      city_story: '',
-      suggested_places: [],
-      itinerary: [],
-      budget_breakdown: {},
-      cultural_tips: [],
-      closing: ''
-    };
+  if (!text) return fallbackPlan('Empty response');
+
+  // Step 1: strip markdown fences
+  let clean = text
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
+
+  // Step 2: direct parse
+  try { return JSON.parse(clean); } catch(e1) {}
+
+  // Step 3: extract first {...} block (greedy)
+  const match = clean.match(/\{[\s\S]*\}/);
+  if (match) {
+    try { return JSON.parse(match[0]); } catch(e2) {}
   }
+
+  // Step 4: try fixing common issues - trailing commas, unescaped chars
+  try {
+    const fixed = clean
+      .replace(/,\s*([}\]])/g, '$1')          // trailing commas
+      .replace(/([{,]\s*)(\w+)\s*:/g, '$1"$2":'); // unquoted keys
+    return JSON.parse(fixed);
+  } catch(e3) {}
+
+  // Step 5: fallback — show raw text as greeting
+  return fallbackPlan(text);
+}
+
+function fallbackPlan(rawText) {
+  return {
+    greeting: typeof rawText === 'string' && rawText.length < 500 ? rawText : 'مرحباً! لقد حدث خطأ في توليد الخطة. يرجى المحاولة مرة أخرى.',
+    city_story: '',
+    suggested_places: [],
+    itinerary: [],
+    budget_breakdown: {},
+    cultural_tips: [],
+    closing: ''
+  };
 }
 
 // ====== RENDER PLAN ======
@@ -1853,7 +1831,7 @@ function escapeHtml(text) {
     .replace(/"/g, '&quot;');
 }
 
-// ====== CALL GROQ ======
+// ====== CALL GROQ (for chat — plain text) ======
 async function callGroq(messages) {
   const res = await fetch(GROQ_URL, {
     method: 'POST',
@@ -1864,12 +1842,38 @@ async function callGroq(messages) {
     body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',
       messages: messages,
-      temperature: 0.7,
-      max_tokens: 4000
+      temperature: 0.75,
+      max_tokens: 1500
     })
   });
   if (!res.ok) {
-    const err = await res.json();
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'API Error ' + res.status);
+  }
+  return res.json();
+}
+
+// ====== CALL GROQ JSON MODE (for plan generation — forces valid JSON) ======
+async function callGroqJSON(systemMsg, userMsg) {
+  const res = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${GROQ_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        { role: 'system', content: systemMsg },
+        { role: 'user', content: userMsg }
+      ],
+      temperature: 0.6,
+      max_tokens: 4000,
+      response_format: { type: 'json_object' }
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
     throw new Error(err.error?.message || 'API Error ' + res.status);
   }
   return res.json();
@@ -2018,5 +2022,7 @@ const nextWeek2 = new Date(today); nextWeek2.setDate(today.getDate() + 10);
 document.getElementById('date-from').value = nextWeek.toISOString().split('T')[0];
 document.getElementById('date-to').value = nextWeek2.toISOString().split('T')[0];
 </script>
+</body>
+</html>
 </body>
 </html>
