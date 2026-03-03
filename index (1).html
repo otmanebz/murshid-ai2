@@ -1,0 +1,2022 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Murshid AI – مرشدك السياحي الذكي</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+:root {
+  --green: #1B4D3E;
+  --green-light: #2a6b56;
+  --gold: #C9A84C;
+  --gold-light: #E8C96A;
+  --terracotta: #B5623A;
+  --cream: #F9F3E8;
+  --cream-dark: #EDE3CC;
+  --sand: #D4C5A4;
+  --text-dark: #1a1208;
+  --text-mid: #4a3820;
+  --white: #FDFAF4;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Tajawal', 'Amiri', serif;
+  background: var(--cream);
+  color: var(--text-dark);
+  min-height: 100vh;
+  direction: rtl;
+}
+body.ltr { direction: ltr; font-family: 'Tajawal', sans-serif; }
+
+.zellige-bg {
+  position: fixed; inset: 0; z-index: -1; opacity: 0.05;
+  background-image:
+    repeating-linear-gradient(45deg, var(--green) 0, var(--green) 1px, transparent 0, transparent 50%),
+    repeating-linear-gradient(-45deg, var(--gold) 0, var(--gold) 1px, transparent 0, transparent 50%);
+  background-size: 30px 30px;
+}
+.zellige-overlay {
+  position: fixed; inset: 0; z-index: -1; opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpolygon points='40,5 52,28 78,28 57,45 65,72 40,56 15,72 23,45 2,28 28,28' fill='%231B4D3E'/%3E%3C/svg%3E");
+  background-size: 80px 80px;
+}
+
+/* ====== HEADER ====== */
+header {
+  background: var(--green);
+  padding: 0;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  border-bottom: 3px solid var(--gold);
+}
+.header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  max-width: 1200px; margin: 0 auto; padding: 14px 24px;
+}
+.logo {
+  display: flex; align-items: center; gap: 14px;
+  text-decoration: none;
+}
+.logo-icon {
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 4px 12px rgba(201,168,76,0.4);
+}
+.logo-text h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 22px; font-weight: 900;
+  color: var(--gold-light);
+  letter-spacing: 2px;
+}
+.logo-text span { font-size: 11px; color: rgba(255,255,255,0.7); display: block; letter-spacing: 1px; }
+
+.lang-switcher { display: flex; gap: 6px; align-items: center; }
+.lang-btn {
+  padding: 6px 14px;
+  border: 2px solid rgba(201,168,76,0.4);
+  background: transparent;
+  color: rgba(255,255,255,0.8);
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 13px; font-weight: 600;
+  transition: all 0.3s;
+  font-family: 'Tajawal', sans-serif;
+}
+.lang-btn:hover, .lang-btn.active { background: var(--gold); color: var(--green); border-color: var(--gold); }
+
+/* ====== PAGES ====== */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ====== HERO ====== */
+.hero {
+  background: linear-gradient(160deg, var(--green) 0%, #0d2e24 50%, #1a3d31 100%);
+  padding: 80px 24px 60px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Ccircle cx='60' cy='60' r='55' fill='none' stroke='%23C9A84C' stroke-width='0.5' opacity='0.15'/%3E%3Cpolygon points='60,10 75,40 108,40 82,58 92,90 60,72 28,90 38,58 12,40 45,40' fill='none' stroke='%23C9A84C' stroke-width='0.5' opacity='0.1'/%3E%3C/svg%3E");
+  background-size: 120px; opacity: 0.3;
+}
+.hero-content { position: relative; z-index: 1; max-width: 750px; margin: 0 auto; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(201,168,76,0.15);
+  border: 1px solid rgba(201,168,76,0.4);
+  padding: 6px 20px; border-radius: 40px;
+  color: var(--gold-light); font-size: 13px;
+  margin-bottom: 24px; backdrop-filter: blur(10px);
+}
+.hero h2 {
+  font-family: 'Amiri', serif;
+  font-size: clamp(32px, 5vw, 56px);
+  color: white; line-height: 1.2; margin-bottom: 16px;
+}
+.hero h2 span { color: var(--gold-light); }
+.hero p { color: rgba(255,255,255,0.75); font-size: 17px; line-height: 1.8; max-width: 560px; margin: 0 auto 32px; }
+
+.zellige-border {
+  height: 6px;
+  background: linear-gradient(90deg, var(--terracotta), var(--gold), var(--green), var(--gold), var(--terracotta));
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}
+@keyframes shimmer { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+
+/* ====== FORM ====== */
+.form-section { max-width: 1000px; margin: 0 auto; padding: 48px 24px 80px; }
+.form-card {
+  background: var(--white);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(27,77,62,0.1), 0 4px 16px rgba(0,0,0,0.05);
+  overflow: hidden;
+  border: 1px solid rgba(201,168,76,0.2);
+}
+.form-header {
+  background: linear-gradient(135deg, var(--green) 0%, #2a6b56 100%);
+  padding: 28px 36px;
+  display: flex; align-items: center; gap: 16px;
+  border-bottom: 2px solid var(--gold);
+}
+.form-header-icon {
+  width: 56px; height: 56px;
+  background: rgba(201,168,76,0.2);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  border: 1px solid rgba(201,168,76,0.3);
+}
+.form-header-text h3 { font-family: 'Cinzel', serif; font-size: 20px; color: var(--gold-light); }
+.form-header-text p { color: rgba(255,255,255,0.7); font-size: 13px; margin-top: 4px; }
+.form-body { padding: 40px 36px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+@media(max-width: 680px) { .form-grid { grid-template-columns: 1fr; } .form-body { padding: 24px 20px; } }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-group.full { grid-column: 1 / -1; }
+.form-label {
+  font-weight: 700; font-size: 14px;
+  color: var(--text-mid);
+  display: flex; align-items: center; gap: 8px;
+}
+.form-label .label-icon {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--green), var(--green-light));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--gold-light); flex-shrink: 0;
+}
+.form-control {
+  padding: 13px 18px;
+  border: 2px solid var(--cream-dark);
+  border-radius: 14px;
+  font-size: 15px;
+  font-family: 'Tajawal', sans-serif;
+  background: var(--cream);
+  color: var(--text-dark);
+  transition: all 0.3s;
+  appearance: none; -webkit-appearance: none;
+  direction: rtl;
+}
+body.ltr .form-control { direction: ltr; }
+.form-control:focus { outline: none; border-color: var(--green); background: white; box-shadow: 0 0 0 4px rgba(27,77,62,0.08); }
+select.form-control {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231B4D3E' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 14px center;
+  padding-left: 40px;
+}
+body.ltr select.form-control { background-position: right 14px center; padding-left: 18px; padding-right: 40px; }
+.budget-row { display: flex; gap: 10px; }
+.budget-row input { flex: 1; }
+.budget-row select { width: 130px; flex-shrink: 0; }
+.check-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 4px; }
+.check-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px;
+  background: var(--cream);
+  border: 2px solid var(--cream-dark);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s;
+  font-size: 14px;
+  user-select: none;
+}
+.check-item:hover { border-color: var(--green); background: rgba(27,77,62,0.05); }
+.check-item.checked { background: var(--green); border-color: var(--green); color: white; }
+.check-item input { display: none; }
+.date-row { display: flex; gap: 10px; align-items: center; }
+.date-row input { flex: 1; }
+.date-sep { color: var(--text-mid); font-weight: 700; flex-shrink: 0; }
+
+.submit-btn {
+  width: 100%;
+  padding: 18px 40px;
+  margin-top: 36px;
+  background: linear-gradient(135deg, var(--green) 0%, #2a6b56 100%);
+  color: white;
+  border: none; border-radius: 16px;
+  font-family: 'Tajawal', serif;
+  font-size: 20px; font-weight: 700;
+  cursor: pointer;
+  transition: all 0.35s;
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  box-shadow: 0 8px 24px rgba(27,77,62,0.35);
+  position: relative; overflow: hidden;
+}
+.submit-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--terracotta) 100%);
+  opacity: 0; transition: opacity 0.35s;
+}
+.submit-btn:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(27,77,62,0.45); }
+.submit-btn:hover::before { opacity: 1; }
+.submit-btn span { position: relative; z-index: 1; }
+.submit-btn .btn-arrow { font-size: 24px; position: relative; z-index: 1; }
+
+/* ====== RESULT PAGE ====== */
+#page-result { max-width: 1200px; margin: 0 auto; padding: 40px 24px 80px; }
+
+.result-header {
+  background: linear-gradient(135deg, var(--green) 0%, #0d2e24 100%);
+  border-radius: 24px;
+  padding: 32px 36px;
+  margin-bottom: 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+  border: 1px solid rgba(201,168,76,0.25);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+.result-info h2 { font-family: 'Cinzel', serif; font-size: 26px; color: var(--gold-light); }
+.result-info p { color: rgba(255,255,255,0.7); margin-top: 6px; font-size: 14px; }
+.result-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.result-tag {
+  padding: 5px 14px;
+  background: rgba(201,168,76,0.15);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 30px;
+  font-size: 13px; color: var(--gold-light);
+}
+.back-btn {
+  padding: 10px 22px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: white; border-radius: 12px; cursor: pointer;
+  font-family: 'Tajawal', sans-serif; font-size: 14px; transition: all 0.3s;
+}
+.back-btn:hover { background: rgba(255,255,255,0.2); }
+
+/* ====== RESULT VIEWS ====== */
+.result-view { display: none; }
+.result-view.active { display: block; }
+
+/* ====== PLAN LAYOUT: 2 columns ====== */
+.plan-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 28px;
+  align-items: start;
+}
+@media(max-width: 900px) { .plan-layout { grid-template-columns: 1fr; } }
+
+/* ====== GREETING CARD ====== */
+.greeting-card {
+  background: var(--white);
+  border-radius: 20px;
+  border: 1px solid rgba(201,168,76,0.25);
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  animation: fadeInUp 0.5s ease;
+}
+.greeting-card-header {
+  background: linear-gradient(135deg, var(--gold) 0%, #8a6020 100%);
+  padding: 16px 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.greeting-card-header .ai-avatar {
+  width: 44px; height: 44px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; border: 2px solid rgba(255,255,255,0.3);
+}
+.greeting-card-header h3 { font-family: 'Cinzel', serif; font-size: 16px; color: var(--green); font-weight: 900; }
+.greeting-card-header p { color: rgba(27,77,62,0.7); font-size: 12px; }
+.greeting-body {
+  padding: 24px 28px;
+  font-size: 16px; line-height: 2.0;
+  color: var(--text-dark);
+  font-family: 'Amiri', serif;
+  border-right: 4px solid var(--gold);
+  margin: 20px;
+  background: linear-gradient(135deg, #fffdf7, var(--cream));
+  border-radius: 12px;
+}
+
+/* ====== DAY CARDS ====== */
+.day-card {
+  background: var(--white);
+  border-radius: 20px;
+  border: 1px solid rgba(201,168,76,0.2);
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  animation: fadeInUp 0.5s ease;
+  transition: box-shadow 0.3s;
+}
+.day-card:hover { box-shadow: 0 8px 32px rgba(27,77,62,0.12); }
+.day-card-header {
+  background: linear-gradient(135deg, var(--green) 0%, #2a6b56 100%);
+  padding: 18px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer;
+}
+.day-card-header-left { display: flex; align-items: center; gap: 14px; }
+.day-badge {
+  background: var(--gold);
+  color: var(--green);
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 18px;
+  font-family: 'Cinzel', serif;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+.day-card-header h3 { font-family: 'Amiri', serif; font-size: 20px; color: white; }
+.day-card-header p { color: rgba(255,255,255,0.65); font-size: 13px; margin-top: 2px; }
+.day-toggle { color: var(--gold-light); font-size: 20px; transition: transform 0.3s; }
+.day-toggle.open { transform: rotate(180deg); }
+
+.day-narrative {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--cream-dark);
+  font-size: 15px; line-height: 1.9;
+  color: var(--text-mid);
+  font-family: 'Amiri', serif;
+  font-style: italic;
+  background: linear-gradient(135deg, #fffdf7, var(--cream));
+}
+
+/* ====== PLACE STOP CARD ====== */
+.place-stop {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(237,227,204,0.5);
+  display: flex; gap: 16px; align-items: flex-start;
+  transition: background 0.2s;
+}
+.place-stop:hover { background: rgba(27,77,62,0.03); }
+.place-stop:last-child { border-bottom: none; }
+.place-stop-num {
+  width: 36px; height: 36px; flex-shrink: 0;
+  background: var(--green);
+  color: var(--gold-light);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 14px;
+  font-family: 'Cinzel', serif;
+  margin-top: 2px;
+}
+.place-stop-body { flex: 1; }
+.place-stop-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+.place-stop-name { font-size: 17px; font-weight: 700; color: var(--green); font-family: 'Amiri', serif; }
+.place-stop-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+.place-meta-chip {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+}
+.chip-time { background: rgba(27,77,62,0.1); color: var(--green); }
+.chip-duration { background: rgba(201,168,76,0.15); color: #8a6020; }
+.chip-price { background: rgba(181,98,58,0.1); color: var(--terracotta); }
+.chip-free { background: rgba(27,77,62,0.1); color: var(--green); }
+.place-stop-desc { font-size: 14px; line-height: 1.7; color: var(--text-mid); margin-bottom: 8px; }
+.place-stop-tip {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: rgba(201,168,76,0.08);
+  border-right: 3px solid var(--gold);
+  padding: 8px 12px;
+  border-radius: 0 8px 8px 0;
+  font-size: 13px; color: #6b4c1a;
+}
+.place-stop-extra { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+.place-extra-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-mid); }
+
+/* ====== BUDGET CARD ====== */
+.budget-card {
+  background: var(--white);
+  border-radius: 20px;
+  border: 1px solid rgba(201,168,76,0.2);
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+.budget-card-header {
+  background: linear-gradient(135deg, var(--terracotta), #8a3a1c);
+  padding: 16px 24px;
+  display: flex; align-items: center; gap: 10px;
+}
+.budget-card-header span { color: white; font-weight: 700; font-size: 15px; }
+.budget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.budget-item {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--cream-dark);
+  border-left: 1px solid var(--cream-dark);
+}
+.budget-item:nth-child(2n) { border-left: none; }
+.budget-item-label { font-size: 13px; color: var(--text-mid); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+.budget-item-value { font-size: 20px; font-weight: 900; color: var(--green); font-family: 'Cinzel', serif; }
+.budget-item-sub { font-size: 12px; color: var(--sand); margin-top: 2px; }
+
+/* ====== TIPS CARD ====== */
+.tips-card {
+  background: var(--white);
+  border-radius: 20px;
+  border: 1px solid rgba(201,168,76,0.2);
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+.tips-card-header {
+  background: linear-gradient(135deg, #3d7a5e, var(--green));
+  padding: 16px 24px;
+  display: flex; align-items: center; gap: 10px;
+}
+.tips-card-header span { color: var(--gold-light); font-weight: 700; font-size: 15px; }
+.tips-body { padding: 20px 24px; }
+.tip-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cream-dark);
+}
+.tip-item:last-child { border-bottom: none; }
+.tip-icon {
+  width: 34px; height: 34px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.tip-text { font-size: 14px; line-height: 1.7; color: var(--text-dark); }
+.tip-label { font-weight: 700; color: var(--green); font-size: 13px; margin-bottom: 2px; }
+
+/* ====== SUGGESTED PLACES SIDEBAR ====== */
+.suggested-sidebar {
+  position: sticky;
+  top: 90px;
+}
+
+.suggested-section {
+  background: var(--white);
+  border-radius: 20px;
+  border: 1px solid rgba(201,168,76,0.25);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  margin-bottom: 24px;
+}
+
+.suggested-header {
+  background: linear-gradient(135deg, var(--green), #2a6b56);
+  padding: 18px 20px;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 2px solid var(--gold);
+}
+.suggested-header-icon {
+  width: 38px; height: 38px;
+  background: rgba(201,168,76,0.2);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  border: 1px solid rgba(201,168,76,0.3);
+}
+.suggested-header-text h4 { font-family: 'Cinzel', serif; font-size: 14px; color: var(--gold-light); }
+.suggested-header-text p { color: rgba(255,255,255,0.6); font-size: 11px; margin-top: 2px; }
+
+.suggested-list { padding: 12px; }
+.suggested-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.25s;
+  margin-bottom: 8px;
+  border: 2px solid transparent;
+  background: var(--cream);
+}
+.suggested-item:last-child { margin-bottom: 0; }
+.suggested-item:hover {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.06);
+  transform: translateX(-4px);
+}
+.suggested-item-icon {
+  width: 46px; height: 46px; flex-shrink: 0;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.icon-hotel { background: linear-gradient(135deg, #e8d5b0, #c9a84c); }
+.icon-nature { background: linear-gradient(135deg, #c8e6c9, #4caf50); }
+.icon-heritage { background: linear-gradient(135deg, #ffe0b2, #ff8c00); }
+.icon-restaurant { background: linear-gradient(135deg, #ffccbc, #e64a19); }
+.icon-activity { background: linear-gradient(135deg, #b3e5fc, #0288d1); }
+.icon-spa { background: linear-gradient(135deg, #f8bbd0, #e91e63); }
+.icon-market { background: linear-gradient(135deg, #dcedc8, #8bc34a); }
+
+.suggested-item-info { flex: 1; min-width: 0; }
+.suggested-item-name { font-size: 15px; font-weight: 700; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.suggested-item-type { font-size: 12px; color: var(--text-mid); margin-top: 2px; }
+.suggested-item-arrow { color: var(--gold); font-size: 14px; flex-shrink: 0; }
+
+/* Loading in sidebar while parsing */
+.suggested-loading {
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--text-mid);
+  font-size: 14px;
+}
+.mini-loader {
+  width: 32px; height: 32px;
+  border: 3px solid var(--cream-dark);
+  border-top: 3px solid var(--green);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+
+/* ====== CUSTOM TRIP PAGE ====== */
+#view-custom-trip {
+  animation: fadeInUp 0.4s ease;
+}
+.custom-trip-back-bar {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 24px;
+}
+.custom-trip-back-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  background: var(--green);
+  color: var(--gold-light);
+  border: none; border-radius: 12px;
+  cursor: pointer;
+  font-family: 'Tajawal', sans-serif; font-size: 14px; font-weight: 600;
+  transition: all 0.3s;
+}
+.custom-trip-back-btn:hover { background: var(--green-light); transform: translateX(3px); }
+.custom-trip-title {
+  font-family: 'Amiri', serif;
+  font-size: 22px; color: var(--green);
+  font-weight: 700;
+}
+
+.custom-trip-hero {
+  background: linear-gradient(135deg, var(--green), #0d2e24);
+  border-radius: 20px;
+  padding: 32px 36px;
+  margin-bottom: 28px;
+  border: 1px solid rgba(201,168,76,0.25);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  display: flex; align-items: center; gap: 20px;
+  flex-wrap: wrap;
+}
+.custom-trip-hero-icon {
+  width: 80px; height: 80px;
+  background: rgba(201,168,76,0.2);
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px;
+  border: 2px solid rgba(201,168,76,0.3);
+  flex-shrink: 0;
+}
+.custom-trip-hero-info h2 { font-family: 'Amiri', serif; font-size: 30px; color: white; }
+.custom-trip-hero-info p { color: rgba(255,255,255,0.7); font-size: 15px; margin-top: 6px; line-height: 1.7; }
+.custom-trip-hero-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.custom-trip-hero-tag {
+  padding: 5px 14px;
+  background: rgba(201,168,76,0.15);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 20px;
+  font-size: 13px; color: var(--gold-light);
+}
+
+.trip-stops-container { display: flex; flex-direction: column; gap: 20px; }
+
+.trip-day-section {
+  background: var(--white);
+  border-radius: 20px;
+  border: 1px solid rgba(201,168,76,0.2);
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+.trip-day-title {
+  background: linear-gradient(135deg, var(--green), #2a6b56);
+  padding: 16px 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.trip-day-number {
+  background: var(--gold);
+  color: var(--green);
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-family: 'Cinzel', serif;
+  font-size: 14px; font-weight: 900;
+}
+.trip-day-name { color: white; font-size: 18px; font-family: 'Amiri', serif; }
+
+.trip-stops-list { padding: 0; }
+.trip-stop-item {
+  display: flex; gap: 0;
+  padding: 0;
+  position: relative;
+}
+.trip-stop-timeline {
+  display: flex; flex-direction: column; align-items: center;
+  width: 60px; flex-shrink: 0;
+  padding: 20px 0;
+}
+.timeline-dot {
+  width: 16px; height: 16px;
+  background: var(--gold);
+  border-radius: 50%;
+  border: 3px solid var(--green);
+  z-index: 1; flex-shrink: 0;
+}
+.timeline-line { width: 2px; flex: 1; background: linear-gradient(to bottom, var(--gold), var(--cream-dark)); min-height: 40px; }
+.trip-stop-item:last-child .timeline-line { display: none; }
+
+.trip-stop-content {
+  flex: 1;
+  padding: 18px 20px 18px 0;
+  border-bottom: 1px solid rgba(237,227,204,0.5);
+}
+.trip-stop-item:last-child .trip-stop-content { border-bottom: none; }
+
+.trip-stop-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.trip-stop-name-group {}
+.trip-stop-emoji { font-size: 20px; margin-bottom: 4px; }
+.trip-stop-name { font-size: 18px; font-weight: 700; color: var(--green); font-family: 'Amiri', serif; }
+.trip-stop-type-label { font-size: 12px; color: var(--text-mid); margin-top: 2px; }
+.trip-stop-badges { display: flex; gap: 6px; flex-wrap: wrap; flex-shrink: 0; }
+.trip-stop-badge {
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px; font-weight: 600;
+}
+.badge-time { background: rgba(27,77,62,0.1); color: var(--green); }
+.badge-duration { background: rgba(201,168,76,0.15); color: #7a5010; }
+.badge-price { background: rgba(181,98,58,0.1); color: var(--terracotta); }
+
+.trip-stop-description { font-size: 14px; line-height: 1.8; color: var(--text-mid); margin-bottom: 10px; }
+
+.trip-stop-tip {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: rgba(201,168,76,0.08);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px; color: #6b4c1a;
+  margin-bottom: 10px;
+}
+.trip-stop-tip-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+.trip-stop-details { display: flex; gap: 16px; flex-wrap: wrap; }
+.trip-stop-detail-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-mid); }
+
+/* Map in custom trip */
+.custom-trip-map-section {
+  background: var(--white);
+  border-radius: 20px;
+  border: 1px solid rgba(201,168,76,0.2);
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+.custom-trip-map-header {
+  background: var(--green);
+  padding: 16px 24px;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 2px solid var(--gold);
+}
+.custom-trip-map-header span { color: var(--gold-light); font-weight: 700; font-size: 15px; }
+#custom-trip-map { height: 380px; }
+
+/* ====== MAP (original) ====== */
+#map-container {
+  background: var(--white);
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(201,168,76,0.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.07);
+  margin-bottom: 28px;
+}
+.map-header {
+  padding: 18px 28px;
+  background: var(--green);
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 2px solid var(--gold);
+}
+.map-header span { color: var(--gold-light); font-weight: 700; font-size: 15px; }
+#trip-map { height: 450px; }
+
+/* ====== CHAT ====== */
+.chat-section {
+  background: var(--white);
+  border-radius: 24px;
+  border: 1px solid rgba(201,168,76,0.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.07);
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+.chat-header {
+  padding: 18px 28px;
+  background: linear-gradient(135deg, var(--green), var(--green-light));
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 2px solid var(--gold);
+}
+.chat-header span { color: var(--gold-light); font-weight: 700; font-size: 15px; }
+.chat-messages {
+  padding: 24px; min-height: 160px; max-height: 400px;
+  overflow-y: auto; display: flex; flex-direction: column; gap: 16px;
+}
+.msg { display: flex; gap: 12px; align-items: flex-start; }
+.msg.user { flex-direction: row-reverse; }
+.msg-avatar {
+  width: 38px; height: 38px; flex-shrink: 0;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.msg.ai .msg-avatar { background: var(--green); color: var(--gold-light); }
+.msg.user .msg-avatar { background: var(--gold); color: var(--green); }
+.msg-bubble {
+  padding: 12px 18px; border-radius: 18px; max-width: 75%; font-size: 15px; line-height: 1.7;
+}
+.msg.ai .msg-bubble {
+  background: var(--cream); border: 1px solid var(--cream-dark);
+  border-radius: 18px 18px 18px 4px;
+}
+.msg.user .msg-bubble { background: var(--green); color: white; border-radius: 18px 18px 4px 18px; }
+.chat-input-row { padding: 16px 24px; background: var(--cream); border-top: 1px solid var(--cream-dark); display: flex; gap: 10px; }
+.chat-input {
+  flex: 1; padding: 12px 18px;
+  border: 2px solid var(--cream-dark); border-radius: 14px;
+  font-family: 'Tajawal', sans-serif; font-size: 15px;
+  background: white; direction: inherit;
+}
+.chat-input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(27,77,62,0.1); }
+.chat-send-btn {
+  padding: 12px 24px; background: var(--green); color: var(--gold-light);
+  border: none; border-radius: 14px; cursor: pointer; font-size: 18px; transition: all 0.3s;
+}
+.chat-send-btn:hover { background: var(--green-light); transform: scale(1.05); }
+
+/* ====== FEEDBACK ====== */
+.feedback-section {
+  background: linear-gradient(135deg, var(--cream) 0%, var(--white) 100%);
+  border-radius: 24px; border: 1px solid rgba(201,168,76,0.25);
+  padding: 40px 36px; text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+.feedback-section h3 { font-family: 'Amiri', serif; font-size: 26px; color: var(--green); margin-bottom: 8px; }
+.feedback-section p { color: var(--text-mid); margin-bottom: 28px; font-size: 15px; }
+.stars-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 24px; }
+.star-btn { font-size: 36px; cursor: pointer; transition: all 0.25s; background: none; border: none; }
+.star-btn:hover, .star-btn.lit { transform: scale(1.2); filter: drop-shadow(0 0 6px var(--gold)); }
+.recommend-row { display: flex; justify-content: center; gap: 16px; margin-bottom: 24px; }
+.rec-btn {
+  padding: 12px 32px; border-radius: 14px; cursor: pointer;
+  font-family: 'Tajawal', sans-serif; font-size: 15px; font-weight: 700; transition: all 0.3s; border: 2px solid;
+}
+.rec-btn.yes { border-color: var(--green); color: var(--green); background: transparent; }
+.rec-btn.yes:hover, .rec-btn.yes.selected { background: var(--green); color: white; }
+.rec-btn.no { border-color: var(--terracotta); color: var(--terracotta); background: transparent; }
+.rec-btn.no:hover, .rec-btn.no.selected { background: var(--terracotta); color: white; }
+.feedback-textarea {
+  width: 100%; max-width: 600px; padding: 14px 18px;
+  border: 2px solid var(--cream-dark); border-radius: 14px;
+  font-family: 'Tajawal', sans-serif; font-size: 15px; resize: vertical;
+  min-height: 100px; direction: inherit;
+}
+.feedback-textarea:focus { outline: none; border-color: var(--green); }
+.feedback-submit {
+  margin-top: 16px; padding: 13px 40px; background: var(--green);
+  color: white; border: none; border-radius: 14px;
+  cursor: pointer; font-family: 'Tajawal', sans-serif; font-size: 16px; font-weight: 700; transition: all 0.3s;
+}
+.feedback-submit:hover { background: var(--green-light); transform: translateY(-2px); }
+
+/* ====== LOADING ====== */
+.loading-state { padding: 80px 36px; text-align: center; }
+.loader-ring {
+  width: 64px; height: 64px;
+  border: 5px solid var(--cream-dark);
+  border-top: 5px solid var(--green);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: var(--text-mid); font-size: 16px; }
+.loading-dots span { animation: blink 1.4s infinite both; font-size: 24px; color: var(--gold); }
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: 0; } 40% { opacity: 1; } }
+
+/* ====== ANIMATIONS ====== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-delay-1 { animation-delay: 0.1s; }
+.animate-delay-2 { animation-delay: 0.2s; }
+.animate-delay-3 { animation-delay: 0.3s; }
+
+/* ====== FOOTER ====== */
+footer { background: var(--green); border-top: 3px solid var(--gold); padding: 28px 24px; text-align: center; }
+footer p { color: rgba(255,255,255,0.6); font-size: 13px; }
+footer span { color: var(--gold-light); }
+
+/* ====== SCROLLBAR ====== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--green); border-radius: 3px; }
+
+/* ====== TOAST ====== */
+.toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: var(--green); color: white; padding: 14px 28px;
+  border-radius: 14px; font-size: 15px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  z-index: 9999; display: none;
+  animation: slideUp 0.3s ease;
+  border: 1px solid var(--gold);
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ====== RESPONSIVE ====== */
+@media(max-width: 768px) {
+  .header-inner { padding: 10px 16px; }
+  .hero { padding: 50px 16px 40px; }
+  .result-header { padding: 20px; }
+  .form-header { padding: 20px; }
+  .feedback-section { padding: 28px 20px; }
+  .plan-layout { grid-template-columns: 1fr; }
+  .suggested-sidebar { position: static; }
+  .day-card-header h3 { font-size: 17px; }
+}
+</style>
+</head>
+<body>
+
+<div class="zellige-bg"></div>
+<div class="zellige-overlay"></div>
+
+<!-- ====== HEADER ====== -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo" onclick="showPage('home')">
+      <div class="logo-icon">🕌</div>
+      <div class="logo-text">
+        <h1>MURSHID AI</h1>
+        <span data-i18n="tagline">مرشدك السياحي الذكي</span>
+      </div>
+    </a>
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('ar')">AR</button>
+      <button class="lang-btn" onclick="setLang('fr')">FR</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('es')">ES</button>
+    </div>
+  </div>
+</header>
+
+<div class="zellige-border"></div>
+
+<!-- ====== PAGE: HOME ====== -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">✨ <span data-i18n="hero_badge">مدعوم بالذكاء الاصطناعي</span></div>
+      <h2><span data-i18n="hero_title1">اكتشف المغرب</span><br><span data-i18n="hero_title2">بطريقة لا تُنسى</span></h2>
+      <p data-i18n="hero_desc">خطط سفر مخصصة، إرشادات في الوقت الفعلي، وتجارب أصيلة – كل ما تحتاجه في رحلتك إلى المغرب</p>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <div class="form-card">
+      <div class="form-header">
+        <div class="form-header-icon">🧭</div>
+        <div class="form-header-text">
+          <h3 data-i18n="form_title">ابنِ خطة رحلتك</h3>
+          <p data-i18n="form_sub">أجب على الأسئلة وسيبني المرشد خطتك المثالية</p>
+        </div>
+      </div>
+      <div class="form-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-icon">🏙️</span>
+              <span data-i18n="lbl_city">المدينة المغربية</span>
+            </label>
+            <select id="city" class="form-control">
+              <option value="" data-i18n="opt_select">— اختر مدينة —</option>
+              <option value="marrakech" data-coords="31.6295,-7.9811">مراكش – Marrakech</option>
+              <option value="fes" data-coords="34.0181,-5.0078">فاس – Fès</option>
+              <option value="casablanca" data-coords="33.5731,-7.5898">الدار البيضاء – Casablanca</option>
+              <option value="chefchaouen" data-coords="35.1716,-5.2697">شفشاون – Chefchaouen</option>
+              <option value="rabat" data-coords="34.0209,-6.8416">الرباط – Rabat</option>
+              <option value="tanger" data-coords="35.7595,-5.8340">طنجة – Tanger</option>
+              <option value="agadir" data-coords="30.4278,-9.5981">أكادير – Agadir</option>
+              <option value="essaouira" data-coords="31.5085,-9.7595">الصويرة – Essaouira</option>
+              <option value="merzouga" data-coords="31.0992,-4.0116">مرزوقة – Merzouga</option>
+              <option value="tetouan" data-coords="35.5889,-5.3626">تطوان – Tétouan</option>
+              <option value="ifrane" data-coords="33.5228,-5.1069">إفران – Ifrane</option>
+              <option value="ouarzazate" data-coords="30.9189,-6.8936">ورزازات – Ouarzazate</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-icon">🌍</span>
+              <span data-i18n="lbl_country">بلدك / جنسيتك</span>
+            </label>
+            <select id="country" class="form-control">
+              <option value="" data-i18n="opt_select">— اختر بلدك —</option>
+              <optgroup label="العالم العربي">
+                <option value="ma" data-lang="ar">المغرب 🇲🇦</option>
+                <option value="sa" data-lang="ar">السعودية 🇸🇦</option>
+                <option value="ae" data-lang="ar">الإمارات 🇦🇪</option>
+                <option value="eg" data-lang="ar">مصر 🇪🇬</option>
+                <option value="dz" data-lang="ar">الجزائر 🇩🇿</option>
+                <option value="tn" data-lang="ar">تونس 🇹🇳</option>
+                <option value="jo" data-lang="ar">الأردن 🇯🇴</option>
+                <option value="kw" data-lang="ar">الكويت 🇰🇼</option>
+                <option value="qa" data-lang="ar">قطر 🇶🇦</option>
+              </optgroup>
+              <optgroup label="Europe">
+                <option value="fr" data-lang="fr">France 🇫🇷</option>
+                <option value="es" data-lang="es">España 🇪🇸</option>
+                <option value="gb" data-lang="en">United Kingdom 🇬🇧</option>
+                <option value="de" data-lang="fr">Deutschland 🇩🇪</option>
+                <option value="it" data-lang="fr">Italia 🇮🇹</option>
+                <option value="be" data-lang="fr">Belgique 🇧🇪</option>
+                <option value="nl" data-lang="en">Netherlands 🇳🇱</option>
+                <option value="pt" data-lang="es">Portugal 🇵🇹</option>
+              </optgroup>
+              <optgroup label="Americas">
+                <option value="us" data-lang="en">United States 🇺🇸</option>
+                <option value="ca" data-lang="en">Canada 🇨🇦</option>
+                <option value="mx" data-lang="es">México 🇲🇽</option>
+                <option value="br" data-lang="es">Brasil 🇧🇷</option>
+              </optgroup>
+              <optgroup label="Asia & Other">
+                <option value="cn" data-lang="en">China 🇨🇳</option>
+                <option value="jp" data-lang="en">Japan 🇯🇵</option>
+                <option value="in" data-lang="en">India 🇮🇳</option>
+                <option value="tr" data-lang="ar">Türkiye 🇹🇷</option>
+                <option value="other" data-lang="en">Other / أخرى</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-icon">💰</span>
+              <span data-i18n="lbl_budget">الميزانية</span>
+            </label>
+            <div class="budget-row">
+              <input type="number" id="budget" class="form-control" placeholder="5000" min="0">
+              <select id="currency" class="form-control">
+                <option value="MAD">درهم MAD</option>
+                <option value="USD">دولار USD</option>
+                <option value="EUR">يورو EUR</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-icon">👥</span>
+              <span data-i18n="lbl_people">عدد المسافرين</span>
+            </label>
+            <select id="people" class="form-control">
+              <option value="1" data-i18n="p1">1 (مسافر منفرد)</option>
+              <option value="2" data-i18n="p2">2 (زوجان)</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6-10" data-i18n="p6">6-10 (مجموعة)</option>
+              <option value="+10" data-i18n="p10">+10 (مجموعة كبيرة)</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">
+              <span class="label-icon">📅</span>
+              <span data-i18n="lbl_dates">مدة الرحلة</span>
+            </label>
+            <div class="date-row">
+              <input type="date" id="date-from" class="form-control">
+              <span class="date-sep">←</span>
+              <input type="date" id="date-to" class="form-control">
+            </div>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">
+              <span class="label-icon">🎯</span>
+              <span data-i18n="lbl_interests">ماذا تريد أن تحجز / تجرب؟</span>
+            </label>
+            <div class="check-grid" id="interests-grid">
+              <label class="check-item checked" data-val="hotel"><input type="checkbox" checked> 🏨 <span data-i18n="int_hotel">فندق</span></label>
+              <label class="check-item" data-val="restaurant"><input type="checkbox"> 🍽️ <span data-i18n="int_rest">مطعم</span></label>
+              <label class="check-item" data-val="history"><input type="checkbox"> 🏛️ <span data-i18n="int_hist">تاريخ وثقافة</span></label>
+              <label class="check-item" data-val="shopping"><input type="checkbox"> 🛍️ <span data-i18n="int_shop">تسوق وأسواق</span></label>
+              <label class="check-item" data-val="nature"><input type="checkbox"> 🌿 <span data-i18n="int_nat">طبيعة وجبال</span></label>
+              <label class="check-item" data-val="activities"><input type="checkbox"> 🏄 <span data-i18n="int_act">أنشطة ورياضة</span></label>
+              <label class="check-item" data-val="spa"><input type="checkbox"> 🛁 <span data-i18n="int_spa">حمام وسبا</span></label>
+              <label class="check-item" data-val="transport"><input type="checkbox"> 🚗 <span data-i18n="int_trans">نقل وتنقل</span></label>
+            </div>
+          </div>
+        </div>
+        <button class="submit-btn" onclick="generatePlan()">
+          <span class="btn-arrow">✈</span>
+          <span data-i18n="btn_plan">خطتي – ابدأ الرحلة!</span>
+          <span class="btn-arrow">🗺️</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== PAGE: RESULT ====== -->
+<div id="page-result" class="page">
+
+  <div style="max-width:1200px;margin:0 auto;padding:40px 24px 80px;">
+
+    <div class="result-header">
+      <div class="result-info">
+        <h2 id="result-city-name">🕌 مراكش</h2>
+        <p id="result-subtitle">رحلتك المثالية</p>
+        <div class="result-tags" id="result-tags"></div>
+      </div>
+      <button class="back-btn" onclick="showPage('home')">← <span data-i18n="btn_back">تعديل الخطة</span></button>
+    </div>
+
+    <!-- VIEW: PLAN -->
+    <div id="view-plan" class="result-view active">
+      <div class="plan-layout">
+
+        <!-- Main content column -->
+        <div id="plan-main-col">
+
+          <!-- Loading state -->
+          <div id="plan-loading" class="greeting-card">
+            <div class="loading-state">
+              <div class="loader-ring"></div>
+              <p class="loading-text" data-i18n="loading">جاري بناء خطتك المثالية...</p>
+              <div class="loading-dots"><span>●</span><span>●</span><span>●</span></div>
+            </div>
+          </div>
+
+          <!-- Plan content will be injected here -->
+          <div id="plan-content"></div>
+
+          <!-- Map -->
+          <div id="map-container">
+            <div class="map-header">
+              <span>🗺️</span>
+              <span data-i18n="map_title">خريطة رحلتك التفاعلية</span>
+            </div>
+            <div id="trip-map"></div>
+          </div>
+
+          <!-- Chat -->
+          <div class="chat-section">
+            <div class="chat-header">
+              <span>💬</span>
+              <span data-i18n="chat_title">تحدث مع مرشدك – عدّل خطتك</span>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="chat-input-row">
+              <input type="text" id="chat-input" class="chat-input" placeholder="اسأل عن أي شيء في خطتك..." onkeydown="if(event.key==='Enter') sendChat()">
+              <button class="chat-send-btn" onclick="sendChat()">⬆</button>
+            </div>
+          </div>
+
+          <!-- Feedback -->
+          <div class="feedback-section">
+            <h3 data-i18n="fb_title">💌 شاركنا رأيك</h3>
+            <p data-i18n="fb_sub">رأيك يساعدنا على تحسين تجربة ملايين السياح</p>
+            <div class="stars-row" id="stars-row">
+              <button class="star-btn" onclick="setRating(1)">⭐</button>
+              <button class="star-btn" onclick="setRating(2)">⭐</button>
+              <button class="star-btn" onclick="setRating(3)">⭐</button>
+              <button class="star-btn" onclick="setRating(4)">⭐</button>
+              <button class="star-btn" onclick="setRating(5)">⭐</button>
+            </div>
+            <p data-i18n="fb_rec">هل تنصح السياح الآخرين باستخدام Murshid AI؟</p>
+            <div class="recommend-row">
+              <button class="rec-btn yes" onclick="setRecommend(true)" data-i18n="fb_yes">👍 نعم بالتأكيد!</button>
+              <button class="rec-btn no" onclick="setRecommend(false)" data-i18n="fb_no">👎 ليس الآن</button>
+            </div>
+            <textarea class="feedback-textarea" id="feedback-text" placeholder="أخبرنا عن تجربتك..."></textarea>
+            <br>
+            <button class="feedback-submit" onclick="submitFeedback()" data-i18n="fb_send">إرسال التقييم</button>
+          </div>
+
+        </div><!-- /plan-main-col -->
+
+        <!-- Suggested Places Sidebar -->
+        <div class="suggested-sidebar">
+          <div class="suggested-section">
+            <div class="suggested-header">
+              <div class="suggested-header-icon">📍</div>
+              <div class="suggested-header-text">
+                <h4>الأماكن المقترحة</h4>
+                <p>اضغط لعرض تفاصيل رحلتك</p>
+              </div>
+            </div>
+            <div id="suggested-list">
+              <div class="suggested-loading">
+                <div class="mini-loader"></div>
+                <p>جاري تحميل الأماكن...</p>
+              </div>
+            </div>
+          </div>
+        </div><!-- /suggested-sidebar -->
+
+      </div><!-- /plan-layout -->
+    </div><!-- /view-plan -->
+
+    <!-- VIEW: CUSTOM TRIP -->
+    <div id="view-custom-trip" class="result-view">
+      <div class="custom-trip-back-bar">
+        <button class="custom-trip-back-btn" onclick="showView('view-plan')">
+          ← العودة للخطة
+        </button>
+        <span class="custom-trip-title" id="custom-trip-title">رحلتك المخصصة</span>
+      </div>
+
+      <!-- Selected place hero -->
+      <div class="custom-trip-hero" id="custom-trip-hero">
+        <div class="custom-trip-hero-icon" id="ct-hero-icon">🏛️</div>
+        <div class="custom-trip-hero-info">
+          <h2 id="ct-hero-name">اسم المكان</h2>
+          <p id="ct-hero-desc">وصف المكان</p>
+          <div class="custom-trip-hero-tags" id="ct-hero-tags"></div>
+        </div>
+      </div>
+
+      <!-- Map for custom trip -->
+      <div class="custom-trip-map-section">
+        <div class="custom-trip-map-header">
+          <span>🗺️</span>
+          <span>مسار رحلتك المخصصة</span>
+        </div>
+        <div id="custom-trip-map"></div>
+      </div>
+
+      <!-- Day-by-day stops -->
+      <div class="trip-stops-container" id="custom-trip-stops"></div>
+
+    </div><!-- /view-custom-trip -->
+
+  </div>
+</div><!-- /page-result -->
+
+<!-- ====== FOOTER ====== -->
+<footer>
+  <p>© 2025 <span>Murshid AI</span> — <span data-i18n="footer_txt">مرشدك السياحي الذكي في المغرب</span> 🇲🇦</p>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ====================================================
+// MURSHID AI — FULL APPLICATION SCRIPT
+// ====================================================
+
+const GROQ_API_KEY = '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';
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+// ====== i18n TRANSLATIONS ======
+const i18n = {
+  ar: {
+    tagline: "مرشدك السياحي الذكي", hero_badge: "مدعوم بالذكاء الاصطناعي",
+    hero_title1: "اكتشف المغرب", hero_title2: "بطريقة لا تُنسى",
+    hero_desc: "خطط سفر مخصصة، إرشادات في الوقت الفعلي، وتجارب أصيلة",
+    form_title: "ابنِ خطة رحلتك", form_sub: "أجب على الأسئلة وسيبني المرشد خطتك المثالية",
+    lbl_city: "المدينة المغربية", lbl_country: "بلدك / جنسيتك",
+    lbl_budget: "الميزانية", lbl_people: "عدد المسافرين",
+    lbl_dates: "مدة الرحلة", lbl_interests: "ماذا تريد أن تحجز / تجرب؟",
+    int_hotel: "فندق", int_rest: "مطعم", int_hist: "تاريخ وثقافة",
+    int_shop: "تسوق وأسواق", int_nat: "طبيعة وجبال", int_act: "أنشطة ورياضة",
+    int_spa: "حمام وسبا", int_trans: "نقل وتنقل",
+    btn_plan: "خطتي – ابدأ الرحلة!", btn_back: "تعديل الخطة",
+    ai_response: "خطتك من Murshid AI", loading: "جاري بناء خطتك المثالية...",
+    map_title: "خريطة رحلتك التفاعلية", chat_title: "تحدث مع مرشدك – عدّل خطتك",
+    chat_placeholder: "اسأل عن أي شيء في خطتك...",
+    fb_title: "💌 شاركنا رأيك", fb_sub: "رأيك يساعدنا على تحسين تجربة ملايين السياح",
+    fb_rec: "هل تنصح السياح الآخرين باستخدام Murshid AI؟",
+    fb_yes: "👍 نعم بالتأكيد!", fb_no: "👎 ليس الآن",
+    fb_placeholder: "أخبرنا عن تجربتك...", fb_send: "إرسال التقييم",
+    footer_txt: "مرشدك السياحي الذكي في المغرب",
+    toast_missing: "⚠️ يرجى ملء جميع الحقول الأساسية",
+    toast_feedback: "شكراً على تقييمك! 🌟",
+    opt_select: "— اختر —", p1: "1 (مسافر منفرد)", p2: "2 (زوجان)",
+    p6: "6-10 (مجموعة)", p10: "+10 (مجموعة كبيرة)"
+  },
+  fr: {
+    tagline: "Votre guide touristique intelligent", hero_badge: "Propulsé par l'IA",
+    hero_title1: "Découvrez le Maroc", hero_title2: "D'une façon inoubliable",
+    hero_desc: "Plans personnalisés, conseils en temps réel et expériences authentiques",
+    form_title: "Créez votre itinéraire", form_sub: "Répondez aux questions et Murshid construira votre plan",
+    lbl_city: "Ville marocaine", lbl_country: "Votre pays d'origine",
+    lbl_budget: "Budget", lbl_people: "Nombre de voyageurs",
+    lbl_dates: "Durée du voyage", lbl_interests: "Que souhaitez-vous réserver ?",
+    int_hotel: "Hôtel", int_rest: "Restaurant", int_hist: "Histoire & Culture",
+    int_shop: "Shopping & Souks", int_nat: "Nature & Montagne",
+    int_act: "Activités & Sport", int_spa: "Hammam & Spa", int_trans: "Transport",
+    btn_plan: "Mon Plan – Commencer!", btn_back: "Modifier le plan",
+    ai_response: "Votre plan par Murshid AI", loading: "Construction de votre plan...",
+    map_title: "Carte interactive de votre voyage", chat_title: "Discutez avec votre guide",
+    chat_placeholder: "Posez une question sur votre plan...",
+    fb_title: "💌 Partagez votre avis", fb_sub: "Vos retours améliorent l'expérience",
+    fb_rec: "Recommanderiez-vous Murshid AI ?",
+    fb_yes: "👍 Oui, absolument !", fb_no: "👎 Pas pour l'instant",
+    fb_placeholder: "Partagez votre expérience...", fb_send: "Envoyer l'avis",
+    footer_txt: "Votre guide touristique intelligent au Maroc",
+    toast_missing: "⚠️ Veuillez remplir tous les champs",
+    toast_feedback: "Merci pour votre avis ! 🌟",
+    opt_select: "— Choisir —", p1: "1 (Solo)", p2: "2 (Couple)",
+    p6: "6-10 (Groupe)", p10: "+10 (Grand groupe)"
+  },
+  en: {
+    tagline: "Your Smart Tourism Guide", hero_badge: "Powered by AI",
+    hero_title1: "Discover Morocco", hero_title2: "In an unforgettable way",
+    hero_desc: "Personalized plans, real-time guidance, and authentic experiences",
+    form_title: "Build Your Trip Plan", form_sub: "Answer the questions and Murshid will build your perfect itinerary",
+    lbl_city: "Moroccan City", lbl_country: "Your Country of Origin",
+    lbl_budget: "Budget", lbl_people: "Number of Travelers",
+    lbl_dates: "Trip Duration", lbl_interests: "What do you want to experience?",
+    int_hotel: "Hotel", int_rest: "Restaurant", int_hist: "History & Culture",
+    int_shop: "Shopping & Souks", int_nat: "Nature & Mountains",
+    int_act: "Activities & Sports", int_spa: "Hammam & Spa", int_trans: "Transport",
+    btn_plan: "My Plan – Start!", btn_back: "Edit Plan",
+    ai_response: "Your Plan from Murshid AI", loading: "Building your perfect plan...",
+    map_title: "Interactive Trip Map", chat_title: "Chat with your Guide",
+    chat_placeholder: "Ask anything about your plan...",
+    fb_title: "💌 Share Your Feedback", fb_sub: "Your feedback helps millions of travelers",
+    fb_rec: "Would you recommend Murshid AI?",
+    fb_yes: "👍 Yes, absolutely!", fb_no: "👎 Not yet",
+    fb_placeholder: "Tell us about your experience...", fb_send: "Submit Review",
+    footer_txt: "Your Smart Tourism Guide in Morocco",
+    toast_missing: "⚠️ Please fill in all required fields",
+    toast_feedback: "Thank you for your review! 🌟",
+    opt_select: "— Select —", p1: "1 (Solo)", p2: "2 (Couple)",
+    p6: "6-10 (Group)", p10: "+10 (Large group)"
+  },
+  es: {
+    tagline: "Tu guía turístico inteligente", hero_badge: "Impulsado por IA",
+    hero_title1: "Descubre Marruecos", hero_title2: "De una manera inolvidable",
+    hero_desc: "Planes personalizados, orientación en tiempo real y experiencias auténticas",
+    form_title: "Crea tu itinerario", form_sub: "Responde las preguntas y Murshid construirá tu plan",
+    lbl_city: "Ciudad marroquí", lbl_country: "Tu país de origen",
+    lbl_budget: "Presupuesto", lbl_people: "Número de viajeros",
+    lbl_dates: "Duración del viaje", lbl_interests: "¿Qué quieres experimentar?",
+    int_hotel: "Hotel", int_rest: "Restaurante", int_hist: "Historia y Cultura",
+    int_shop: "Compras y Zocos", int_nat: "Naturaleza y Montañas",
+    int_act: "Actividades y Deportes", int_spa: "Hammam y Spa", int_trans: "Transporte",
+    btn_plan: "¡Mi Plan – Comenzar!", btn_back: "Editar plan",
+    ai_response: "Tu plan de Murshid AI", loading: "Construyendo tu plan...",
+    map_title: "Mapa interactivo del viaje", chat_title: "Habla con tu guía",
+    chat_placeholder: "Pregunta sobre tu plan...",
+    fb_title: "💌 Comparte tu opinión", fb_sub: "Tus comentarios mejoran la experiencia",
+    fb_rec: "¿Recomendarías Murshid AI?",
+    fb_yes: "👍 ¡Sí!", fb_no: "👎 No aún",
+    fb_placeholder: "Cuéntanos tu experiencia...", fb_send: "Enviar reseña",
+    footer_txt: "Tu guía turístico inteligente en Marruecos",
+    toast_missing: "⚠️ Por favor completa todos los campos",
+    toast_feedback: "¡Gracias por tu reseña! 🌟",
+    opt_select: "— Seleccionar —", p1: "1 (Solo)", p2: "2 (Pareja)",
+    p6: "6-10 (Grupo)", p10: "+10 (Grupo grande)"
+  }
+};
+
+// ====== STATE ======
+let currentLang = 'ar';
+let currentRating = 0;
+let currentRecommend = null;
+let tripMap = null;
+let customTripMap = null;
+let conversationHistory = [];
+let tripData = {};
+let parsedPlanData = null;
+
+// ====== LANGUAGE ======
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.toUpperCase() === lang.toUpperCase());
+  });
+  const isRTL = lang === 'ar';
+  document.documentElement.lang = lang;
+  document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+  document.body.classList.toggle('ltr', !isRTL);
+  const t = i18n[lang] || i18n.ar;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key]) el.textContent = t[key];
+  });
+  const ci = document.getElementById('chat-input');
+  if (ci) ci.placeholder = t.chat_placeholder || '';
+}
+
+// ====== PAGE & VIEW SWITCH ======
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showView(viewId) {
+  document.querySelectorAll('.result-view').forEach(v => v.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ====== TOAST ======
+function showToast(msg, duration = 3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, duration);
+}
+
+// ====== CHECK ITEMS ======
+document.querySelectorAll('.check-item').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.preventDefault();
+    item.classList.toggle('checked');
+    item.querySelector('input').checked = item.classList.contains('checked');
+  });
+});
+
+// ====== BUILD PROMPT (JSON format) ======
+function buildPrompt(data) {
+  const langMap = { ar: 'Arabic', fr: 'French', en: 'English', es: 'Spanish' };
+  const langName = langMap[data.lang] || 'Arabic';
+  const interests = data.interests.join(', ');
+  const days = data.dateFrom && data.dateTo
+    ? Math.ceil((new Date(data.dateTo) - new Date(data.dateFrom)) / 86400000)
+    : 3;
+
+  return `You are Murshid AI, an expert Moroccan tourism guide. You MUST respond ONLY in valid JSON format (no markdown, no backticks, just raw JSON).
+
+TOURIST PROFILE:
+- City: ${data.city}
+- From: ${data.country}
+- Budget: ${data.budget} ${data.currency}
+- Travelers: ${data.people}
+- Dates: ${data.dateFrom || 'flexible'} to ${data.dateTo || 'flexible'} (${days} days)
+- Interests: ${interests}
+- Language: ${langName}
+
+Return this EXACT JSON structure (all text in ${langName}):
+{
+  "greeting": "A warm, personal 2-3 sentence welcome message addressing their specific profile",
+  "city_story": "A beautiful 2-3 sentence poetic description of the city",
+  "suggested_places": [
+    {
+      "id": 1,
+      "name": "Place name in local language",
+      "name_en": "Place name in English",
+      "type": "hotel|nature|heritage|restaurant|activity|spa|market",
+      "emoji": "🏨",
+      "category_label": "فندق|طبيعة|تراث|مطعم|نشاط|سبا|سوق",
+      "description": "2-sentence description why this place matches the tourist",
+      "secret_tip": "One authentic local secret tip",
+      "price_mad": "Price range in MAD e.g. 150-300 درهم",
+      "hours": "Opening hours",
+      "phone": "Phone number if known, else empty string"
+    }
+  ],
+  "itinerary": [
+    {
+      "day": 1,
+      "day_title": "Day title (e.g. اليوم الأول)",
+      "theme": "Theme for the day (e.g. الأسواق والتاريخ)",
+      "narrative": "2-sentence story about what this day feels like",
+      "stops": [
+        {
+          "place_id": 1,
+          "name": "Place name",
+          "emoji": "🕌",
+          "type_label": "Type label",
+          "time": "09:00 ص",
+          "duration": "2 ساعات",
+          "price_mad": "مجاني|150 درهم",
+          "description": "Why visit, what to do there, what to expect",
+          "tip": "Local secret tip"
+        }
+      ]
+    }
+  ],
+  "budget_breakdown": {
+    "accommodation": {"amount": 0, "label": "الإقامة", "emoji": "🏨"},
+    "food": {"amount": 0, "label": "الطعام", "emoji": "🍽️"},
+    "activities": {"amount": 0, "label": "الأنشطة", "emoji": "🎭"},
+    "transport": {"amount": 0, "label": "التنقل", "emoji": "🚗"}
+  },
+  "cultural_tips": [
+    {"icon": "👗", "label": "اللباس", "text": "Dress code tip"},
+    {"icon": "🤝", "label": "الآداب", "text": "Etiquette tip"},
+    {"icon": "💬", "label": "عبارات مفيدة", "text": "Useful local phrases"},
+    {"icon": "💡", "label": "نصيحة عملية", "text": "Practical tip"}
+  ],
+  "closing": "A warm encouraging 2-sentence closing message"
+}
+
+Generate ${days} days in the itinerary. Generate 4-6 suggested places. Make all amounts in MAD. Budget total is ${data.budget} ${data.currency}.`;
+}
+
+// ====== GENERATE PLAN ======
+async function generatePlan() {
+  const city = document.getElementById('city').value;
+  const country = document.getElementById('country').value;
+  const budget = document.getElementById('budget').value;
+  const currency = document.getElementById('currency').value;
+  const people = document.getElementById('people').value;
+  const dateFrom = document.getElementById('date-from').value;
+  const dateTo = document.getElementById('date-to').value;
+
+  if (!city || !country || !budget) {
+    showToast((i18n[currentLang] || i18n.ar).toast_missing);
+    return;
+  }
+
+  const interests = [];
+  document.querySelectorAll('.check-item.checked').forEach(item => {
+    interests.push(item.getAttribute('data-val'));
+  });
+
+  const countryEl = document.getElementById('country');
+  const suggestedLang = countryEl.options[countryEl.selectedIndex].getAttribute('data-lang') || currentLang;
+
+  tripData = { city, country, budget, currency, people, dateFrom, dateTo, interests, lang: suggestedLang };
+
+  const cityNames = {
+    marrakech: 'مراكش – Marrakech', fes: 'فاس – Fès',
+    casablanca: 'الدار البيضاء – Casablanca', chefchaouen: 'شفشاون – Chefchaouen',
+    rabat: 'الرباط – Rabat', tanger: 'طنجة – Tanger',
+    agadir: 'أكادير – Agadir', essaouira: 'الصويرة – Essaouira',
+    merzouga: 'مرزوقة – Merzouga', tetouan: 'تطوان – Tétouan',
+    ifrane: 'إفران – Ifrane', ouarzazate: 'ورزازات – Ouarzazate'
+  };
+  document.getElementById('result-city-name').textContent = '🕌 ' + (cityNames[city] || city);
+
+  const tags = document.getElementById('result-tags');
+  tags.innerHTML = `
+    <span class="result-tag">💰 ${budget} ${currency}</span>
+    <span class="result-tag">👥 ${people}</span>
+    ${dateFrom ? `<span class="result-tag">📅 ${dateFrom} → ${dateTo}</span>` : ''}
+    ${interests.slice(0, 3).map(i => `<span class="result-tag">✓ ${i}</span>`).join('')}
+  `;
+
+  showPage('result');
+  showView('view-plan');
+
+  // Reset
+  document.getElementById('plan-loading').style.display = 'block';
+  document.getElementById('plan-content').innerHTML = '';
+  document.getElementById('suggested-list').innerHTML = '<div class="suggested-loading"><div class="mini-loader"></div><p>جاري تحميل الأماكن...</p></div>';
+  conversationHistory = [];
+  document.getElementById('chat-messages').innerHTML = '';
+
+  initTripMap(city);
+
+  const prompt = buildPrompt(tripData);
+  conversationHistory.push({ role: 'user', content: prompt });
+
+  try {
+    const response = await callGroq(conversationHistory);
+    const text = extractText(response);
+    conversationHistory.push({ role: 'assistant', content: text });
+
+    // Parse JSON
+    const planData = parseJSON(text);
+    parsedPlanData = planData;
+
+    // Render
+    document.getElementById('plan-loading').style.display = 'none';
+    renderPlan(planData);
+    renderSuggestedPlaces(planData.suggested_places || []);
+
+    // Add chat bubble
+    if (planData.greeting) {
+      addChatMessage('ai', planData.greeting);
+    }
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('plan-loading').style.display = 'none';
+    document.getElementById('plan-content').innerHTML = `
+      <div class="greeting-card" style="text-align:center;padding:40px;">
+        <p style="font-size:20px;color:#c0392b;">⚠️ حدث خطأ في الاتصال</p>
+        <p style="color:#666;margin-top:10px;font-size:14px;">${err.message}</p>
+        <button onclick="generatePlan()" style="margin-top:20px;padding:12px 28px;background:var(--green);color:white;border:none;border-radius:12px;cursor:pointer;font-size:15px;">🔄 حاول مرة أخرى</button>
+      </div>
+    `;
+    document.getElementById('suggested-list').innerHTML = '<div class="suggested-loading"><p style="color:#c0392b;">فشل التحميل</p></div>';
+  }
+}
+
+// ====== PARSE JSON ======
+function parseJSON(text) {
+  try {
+    // Remove any markdown code blocks
+    const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    return JSON.parse(clean);
+  } catch(e) {
+    // Try to extract JSON from text
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) {
+      try { return JSON.parse(match[0]); } catch(e2) {}
+    }
+    // Return fallback
+    return {
+      greeting: text.substring(0, 300),
+      city_story: '',
+      suggested_places: [],
+      itinerary: [],
+      budget_breakdown: {},
+      cultural_tips: [],
+      closing: ''
+    };
+  }
+}
+
+// ====== RENDER PLAN ======
+function renderPlan(data) {
+  let html = '';
+
+  // Greeting Card
+  if (data.greeting || data.city_story) {
+    html += `
+      <div class="greeting-card" style="animation: fadeInUp 0.5s ease;">
+        <div class="greeting-card-header">
+          <div class="ai-avatar">🕌</div>
+          <div>
+            <h3>Murshid AI</h3>
+            <p>مرشدك الشخصي في المغرب</p>
+          </div>
+        </div>
+        <div class="greeting-body">
+          ${escapeHtml(data.greeting || '')}
+          ${data.city_story ? `<br><br><em>${escapeHtml(data.city_story)}</em>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  // Day Cards
+  if (data.itinerary && data.itinerary.length > 0) {
+    data.itinerary.forEach((day, di) => {
+      html += `
+        <div class="day-card" style="animation: fadeInUp ${0.5 + di * 0.15}s ease;">
+          <div class="day-card-header" onclick="toggleDay(${di})">
+            <div class="day-card-header-left">
+              <div class="day-badge">${day.day || (di + 1)}</div>
+              <div>
+                <h3>${escapeHtml(day.day_title || `اليوم ${day.day || di + 1}`)}</h3>
+                <p>${escapeHtml(day.theme || '')}</p>
+              </div>
+            </div>
+            <span class="day-toggle open" id="toggle-${di}">▾</span>
+          </div>
+          ${day.narrative ? `<div class="day-narrative">${escapeHtml(day.narrative)}</div>` : ''}
+          <div id="day-body-${di}">
+            ${renderStops(day.stops || [])}
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  // Budget Card
+  if (data.budget_breakdown && Object.keys(data.budget_breakdown).length > 0) {
+    const bd = data.budget_breakdown;
+    const items = Object.values(bd);
+    html += `
+      <div class="budget-card" style="animation: fadeInUp 0.8s ease;">
+        <div class="budget-card-header">
+          <span>💰</span>
+          <span>توزيع الميزانية</span>
+        </div>
+        <div class="budget-grid">
+          ${items.map(item => `
+            <div class="budget-item">
+              <div class="budget-item-label">${item.emoji || '💡'} ${escapeHtml(item.label || '')}</div>
+              <div class="budget-item-value">${item.amount ? Number(item.amount).toLocaleString() : '—'}</div>
+              <div class="budget-item-sub">درهم مغربي</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Cultural Tips
+  if (data.cultural_tips && data.cultural_tips.length > 0) {
+    html += `
+      <div class="tips-card" style="animation: fadeInUp 0.9s ease;">
+        <div class="tips-card-header">
+          <span>🧭</span>
+          <span>نصائح ثقافية وعملية</span>
+        </div>
+        <div class="tips-body">
+          ${data.cultural_tips.map(tip => `
+            <div class="tip-item">
+              <div class="tip-icon">${tip.icon || '💡'}</div>
+              <div class="tip-text">
+                <div class="tip-label">${escapeHtml(tip.label || '')}</div>
+                ${escapeHtml(tip.text || '')}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Closing
+  if (data.closing) {
+    html += `
+      <div class="greeting-card" style="animation: fadeInUp 1.0s ease;">
+        <div class="greeting-card-header">
+          <div class="ai-avatar">✨</div>
+          <div>
+            <h3>في الختام</h3>
+            <p>من Murshid AI</p>
+          </div>
+        </div>
+        <div class="greeting-body">${escapeHtml(data.closing)}</div>
+      </div>
+    `;
+  }
+
+  // Disclaimer
+  html += `
+    <div style="margin:16px 0;padding:14px 18px;background:rgba(181,98,58,0.08);border:1px solid rgba(181,98,58,0.2);border-radius:12px;font-size:13px;color:#8a3a1c;line-height:1.7;">
+      ⚠️ Murshid AI يقدم توصيات بناءً على البيانات المتاحة. يُرجى التحقق من مواعيد الفتح والأسعار قبل الزيارة.
+    </div>
+  `;
+
+  document.getElementById('plan-content').innerHTML = html;
+}
+
+// ====== RENDER STOPS ======
+function renderStops(stops) {
+  if (!stops || stops.length === 0) return '';
+  return stops.map((stop, i) => `
+    <div class="place-stop">
+      <div class="place-stop-num">${i + 1}</div>
+      <div class="place-stop-body">
+        <div class="place-stop-top">
+          <div class="place-stop-name">${stop.emoji || ''} ${escapeHtml(stop.name || '')}</div>
+          <div class="place-stop-meta">
+            ${stop.time ? `<span class="place-meta-chip chip-time">⏰ ${escapeHtml(stop.time)}</span>` : ''}
+            ${stop.duration ? `<span class="place-meta-chip chip-duration">⏱ ${escapeHtml(stop.duration)}</span>` : ''}
+            ${stop.price_mad ? `<span class="place-meta-chip ${stop.price_mad.includes('مجاني') || stop.price_mad.includes('free') ? 'chip-free' : 'chip-price'}">💰 ${escapeHtml(stop.price_mad)}</span>` : ''}
+          </div>
+        </div>
+        ${stop.type_label ? `<div style="font-size:12px;color:var(--text-mid);margin-bottom:6px;">${escapeHtml(stop.type_label)}</div>` : ''}
+        <div class="place-stop-desc">${escapeHtml(stop.description || '')}</div>
+        ${stop.tip ? `<div class="place-stop-tip">💡 <span>${escapeHtml(stop.tip)}</span></div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ====== TOGGLE DAY ======
+function toggleDay(di) {
+  const body = document.getElementById(`day-body-${di}`);
+  const toggle = document.getElementById(`toggle-${di}`);
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  toggle.classList.toggle('open', !isOpen);
+}
+
+// ====== RENDER SUGGESTED PLACES ======
+function renderSuggestedPlaces(places) {
+  if (!places || places.length === 0) {
+    document.getElementById('suggested-list').innerHTML = '<div class="suggested-loading"><p>لا توجد أماكن مقترحة</p></div>';
+    return;
+  }
+
+  const typeIconMap = {
+    hotel: 'icon-hotel', nature: 'icon-nature', heritage: 'icon-heritage',
+    restaurant: 'icon-restaurant', activity: 'icon-activity', spa: 'icon-spa', market: 'icon-market'
+  };
+
+  const html = places.map((place, i) => {
+    const iconClass = typeIconMap[place.type] || 'icon-heritage';
+    return `
+      <div class="suggested-item" onclick="openCustomTrip(${i})" style="animation: fadeInUp ${0.2 + i * 0.1}s ease;">
+        <div class="suggested-item-icon ${iconClass}">${place.emoji || '📍'}</div>
+        <div class="suggested-item-info">
+          <div class="suggested-item-name">${escapeHtml(place.name || '')}</div>
+          <div class="suggested-item-type">${escapeHtml(place.category_label || place.type || '')}</div>
+        </div>
+        <div class="suggested-item-arrow">←</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('suggested-list').innerHTML = `<div class="suggested-list">${html}</div>`;
+}
+
+// ====== OPEN CUSTOM TRIP ======
+function openCustomTrip(placeIndex) {
+  if (!parsedPlanData) return;
+
+  const place = parsedPlanData.suggested_places[placeIndex];
+  if (!place) return;
+
+  // Set hero
+  document.getElementById('ct-hero-icon').textContent = place.emoji || '📍';
+  document.getElementById('ct-hero-name').textContent = place.name || '';
+  document.getElementById('ct-hero-desc').textContent = place.description || '';
+  document.getElementById('custom-trip-title').textContent = 'رحلتك المخصصة';
+
+  // Hero tags
+  const tagsHTML = [
+    place.category_label ? `<span class="custom-trip-hero-tag">${place.category_label}</span>` : '',
+    place.price_mad ? `<span class="custom-trip-hero-tag">💰 ${place.price_mad}</span>` : '',
+    place.hours ? `<span class="custom-trip-hero-tag">🕐 ${place.hours}</span>` : '',
+    place.phone ? `<span class="custom-trip-hero-tag">📞 ${place.phone}</span>` : ''
+  ].filter(Boolean).join('');
+  document.getElementById('ct-hero-tags').innerHTML = tagsHTML;
+
+  // Secret tip section
+  if (place.secret_tip) {
+    document.getElementById('ct-hero-desc').innerHTML =
+      escapeHtml(place.description || '') +
+      `<br><br><span style="display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3);padding:6px 12px;border-radius:8px;font-size:13px;">✨ ${escapeHtml(place.secret_tip)}</span>`;
+  }
+
+  // Build full itinerary stops
+  renderCustomTripStops(parsedPlanData.itinerary || []);
+
+  // Init custom trip map
+  initCustomTripMap(tripData.city);
+
+  showView('view-custom-trip');
+}
+
+// ====== RENDER CUSTOM TRIP STOPS ======
+function renderCustomTripStops(itinerary) {
+  const container = document.getElementById('custom-trip-stops');
+  if (!itinerary || itinerary.length === 0) {
+    container.innerHTML = '<p style="text-align:center;color:var(--text-mid);padding:40px;">لا توجد تفاصيل</p>';
+    return;
+  }
+
+  let html = '';
+  itinerary.forEach(day => {
+    const stops = day.stops || [];
+    html += `
+      <div class="trip-day-section">
+        <div class="trip-day-title">
+          <span class="trip-day-number">${day.day_title || `اليوم ${day.day}`}</span>
+          <span class="trip-day-name">${escapeHtml(day.theme || '')}</span>
+        </div>
+        ${day.narrative ? `<div class="day-narrative" style="padding:16px 24px;border-bottom:1px solid var(--cream-dark);">${escapeHtml(day.narrative)}</div>` : ''}
+        <div class="trip-stops-list">
+          ${stops.map((stop, si) => `
+            <div class="trip-stop-item">
+              <div class="trip-stop-timeline">
+                <div class="timeline-dot"></div>
+                ${si < stops.length - 1 ? '<div class="timeline-line"></div>' : ''}
+              </div>
+              <div class="trip-stop-content">
+                <div class="trip-stop-header">
+                  <div class="trip-stop-name-group">
+                    <div class="trip-stop-emoji">${stop.emoji || '📍'}</div>
+                    <div class="trip-stop-name">${escapeHtml(stop.name || '')}</div>
+                    <div class="trip-stop-type-label">${escapeHtml(stop.type_label || '')}</div>
+                  </div>
+                  <div class="trip-stop-badges">
+                    ${stop.time ? `<span class="trip-stop-badge badge-time">⏰ ${escapeHtml(stop.time)}</span>` : ''}
+                    ${stop.duration ? `<span class="trip-stop-badge badge-duration">⏱ ${escapeHtml(stop.duration)}</span>` : ''}
+                    ${stop.price_mad ? `<span class="trip-stop-badge badge-price">💰 ${escapeHtml(stop.price_mad)}</span>` : ''}
+                  </div>
+                </div>
+                <div class="trip-stop-description">${escapeHtml(stop.description || '')}</div>
+                ${stop.tip ? `
+                  <div class="trip-stop-tip">
+                    <span class="trip-stop-tip-icon">💡</span>
+                    <span>${escapeHtml(stop.tip)}</span>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+// ====== ESCAPE HTML ======
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ====== CALL GROQ ======
+async function callGroq(messages) {
+  const res = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${GROQ_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages: messages,
+      temperature: 0.7,
+      max_tokens: 4000
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || 'API Error ' + res.status);
+  }
+  return res.json();
+}
+
+function extractText(data) {
+  try { return data.choices[0].message.content || ''; } catch(e) { return ''; }
+}
+
+// ====== CHAT ======
+function addChatMessage(role, text) {
+  const msgs = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `
+    <div class="msg-avatar">${role === 'ai' ? '🕌' : '👤'}</div>
+    <div class="msg-bubble">${escapeHtml(text).replace(/\n/g, '<br>')}</div>
+  `;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  addChatMessage('user', msg);
+
+  const langMap = { ar: 'Arabic', fr: 'French', en: 'English', es: 'Spanish' };
+  const userMsg = `(Reply in ${langMap[tripData.lang] || 'Arabic'}, conversational format not JSON) User asks: ${msg}`;
+  conversationHistory.push({ role: 'user', content: userMsg });
+
+  const loadDiv = document.createElement('div');
+  loadDiv.className = 'msg ai';
+  loadDiv.innerHTML = '<div class="msg-avatar">🕌</div><div class="msg-bubble"><div class="loading-dots"><span>●</span><span>●</span><span>●</span></div></div>';
+  document.getElementById('chat-messages').appendChild(loadDiv);
+  document.getElementById('chat-messages').scrollTop = 99999;
+
+  try {
+    const response = await callGroq(conversationHistory);
+    const text = extractText(response);
+    loadDiv.remove();
+    addChatMessage('ai', text);
+    conversationHistory.push({ role: 'assistant', content: text });
+  } catch(err) {
+    loadDiv.remove();
+    addChatMessage('ai', '⚠️ ' + err.message);
+  }
+}
+
+// ====== MAP ======
+const cityCoords = {
+  marrakech: [31.6295, -7.9811], fes: [34.0181, -5.0078],
+  casablanca: [33.5731, -7.5898], chefchaouen: [35.1716, -5.2697],
+  rabat: [34.0209, -6.8416], tanger: [35.7595, -5.8340],
+  agadir: [30.4278, -9.5981], essaouira: [31.5085, -9.7595],
+  merzouga: [31.0992, -4.0116], tetouan: [35.5889, -5.3626],
+  ifrane: [33.5228, -5.1069], ouarzazate: [30.9189, -6.8936]
+};
+
+const cityAttractions = {
+  marrakech: [[31.6258,-7.9891,"🏛️ جامع الفنا"],[31.6417,-8.0029,"🌺 حدائق ماجوريل"],[31.6316,-7.9865,"🕌 المدرسة البن يوسف"],[31.6181,-7.9868,"🏰 قصر البديع"],[31.6195,-7.9895,"⚰️ ضريح السعديين"]],
+  fes: [[34.0641,-4.9726,"🕌 جامع القرويين"],[34.0650,-4.9730,"🏛️ مدرسة العطارين"],[34.0636,-4.9743,"🎨 دباغة شواره"]],
+  chefchaouen: [[35.1716,-5.2697,"💙 المدينة الزرقاء"],[35.1725,-5.2706,"⛩️ قلعة القصبة"],[35.1708,-5.2692,"⛲ ساحة الحمام"]],
+  casablanca: [[33.6057,-7.6324,"🕌 مسجد الحسن الثاني"],[33.5893,-7.6114,"🎭 أنفا"],[33.5731,-7.5898,"🌊 الكورنيش"]],
+  rabat: [[34.0209,-6.8416,"🏰 قصبة الوداية"],[34.0138,-6.8326,"🕌 برج الصومعة"],[34.0170,-6.8269,"⚰️ شالة"]],
+  agadir: [[30.4278,-9.5981,"🏖️ شاطئ أكادير"],[30.4356,-9.5998,"🏰 أكادير أوفلا"],[30.4200,-9.6100,"🌴 حديقة النيل"]],
+  essaouira: [[31.5131,-9.7720,"🏰 سور الصويرة"],[31.5085,-9.7595,"🌊 الساحل"],[31.5100,-9.7660,"🎸 موسيقى كناوة"]],
+  tanger: [[35.7912,-5.8086,"🏛️ القصبة"],[35.7776,-5.8475,"🌊 كهف هرقل"],[35.7917,-5.8062,"🏰 دار المخزن"]],
+  merzouga: [[31.1011,-4.0136,"🐪 كثبان عرق شبي"],[31.0992,-4.0116,"🌅 غروب الصحراء"],[31.1032,-4.0168,"⛺ خيام الصحراء"]],
+  ifrane: [[33.5228,-5.1069,"🦁 تمثال الأسد"],[33.5200,-5.1100,"❄️ بوابلان"],[33.5250,-5.0950,"🌲 حديقة الأرز"]],
+  ouarzazate: [[30.9189,-6.8936,"🎬 استوديوهات CLA"],[31.0492,-6.6800,"🏰 آيت بن حدو"],[30.9175,-6.9028,"🕌 قصبة تيفولتوت"]],
+  tetouan: [[35.5738,-5.3707,"🏛️ الميدان الكبير"],[35.5709,-5.3721,"🕌 جامع سيدي الساقي"],[35.5889,-5.3626,"🖼️ المتحف الأثري"]]
+};
+
+function initTripMap(city) {
+  const container = document.getElementById('trip-map');
+  if (tripMap) { tripMap.remove(); tripMap = null; }
+  const coords = cityCoords[city] || [31.6295, -7.9811];
+  tripMap = L.map('trip-map').setView(coords, 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(tripMap);
+  const attractions = cityAttractions[city] || [];
+  const latlngs = [];
+  attractions.forEach((attr, i) => {
+    const [lat, lng, name] = attr;
+    latlngs.push([lat, lng]);
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="background:#1B4D3E;border:3px solid #C9A84C;border-radius:50%;color:white;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:15px;box-shadow:0 3px 8px rgba(0,0,0,0.4);">${i+1}</div>`,
+      iconSize: [36, 36], iconAnchor: [18, 18]
+    });
+    L.marker([lat, lng], { icon }).addTo(tripMap).bindPopup(`<strong style="color:#1B4D3E;">${name}</strong><br><small>محطة ${i+1}</small>`);
+  });
+  if (latlngs.length > 1) {
+    L.polyline(latlngs, { color: '#C9A84C', weight: 3, dashArray: '8,8', opacity: 0.8 }).addTo(tripMap);
+  }
+}
+
+function initCustomTripMap(city) {
+  const container = document.getElementById('custom-trip-map');
+  if (customTripMap) { customTripMap.remove(); customTripMap = null; }
+  const coords = cityCoords[city] || [31.6295, -7.9811];
+  customTripMap = L.map('custom-trip-map').setView(coords, 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(customTripMap);
+  const attractions = cityAttractions[city] || [];
+  const latlngs = [];
+  attractions.forEach((attr, i) => {
+    const [lat, lng, name] = attr;
+    latlngs.push([lat, lng]);
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="background:#C9A84C;border:3px solid #1B4D3E;border-radius:50%;color:#1B4D3E;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;box-shadow:0 3px 8px rgba(0,0,0,0.3);">${i+1}</div>`,
+      iconSize: [32, 32], iconAnchor: [16, 16]
+    });
+    L.marker([lat, lng], { icon }).addTo(customTripMap).bindPopup(`<strong style="color:#1B4D3E;">${name}</strong>`);
+  });
+  if (latlngs.length > 1) {
+    L.polyline(latlngs, { color: '#1B4D3E', weight: 3, dashArray: '6,6', opacity: 0.7 }).addTo(customTripMap);
+  }
+}
+
+// ====== FEEDBACK ======
+function setRating(n) {
+  currentRating = n;
+  document.querySelectorAll('.star-btn').forEach((btn, i) => {
+    btn.classList.toggle('lit', i < n);
+    btn.textContent = i < n ? '🌟' : '⭐';
+  });
+}
+function setRecommend(val) {
+  currentRecommend = val;
+  document.querySelectorAll('.rec-btn').forEach(btn => btn.classList.remove('selected'));
+  document.querySelector(`.rec-btn.${val ? 'yes' : 'no'}`).classList.add('selected');
+}
+function submitFeedback() {
+  const t = i18n[currentLang];
+  showToast(t.toast_feedback || 'شكراً! 🌟');
+}
+
+// ====== INIT ======
+setLang('ar');
+const today = new Date();
+const nextWeek = new Date(today); nextWeek.setDate(today.getDate() + 7);
+const nextWeek2 = new Date(today); nextWeek2.setDate(today.getDate() + 10);
+document.getElementById('date-from').value = nextWeek.toISOString().split('T')[0];
+document.getElementById('date-to').value = nextWeek2.toISOString().split('T')[0];
+</script>
+</body>
+</html>
